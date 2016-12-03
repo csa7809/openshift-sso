@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: lizard-auth
+    
+  cloud:
+    # will search in this paths
+    # /{application}/{profile}[/{label}]
+    # /{application}-{profile}.yml
+    # /{label}/{application}-{profile}.yml
+    # /{application}-{profile}.properties
+    # /{label}/{application}-{profile}.properties
+    config:
+      uri: http://localhost:8099/config
+      
+    # Registrering client, ignore registration of some (virtual) interfaces
+    inetutils:
+      ignoredInterfaces:
+        - docker0
+        - veth.*

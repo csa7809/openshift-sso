@@ -1,0 +1,12 @@
+
+#divLogin{
+	width: 540px;
+	height: 100%;
+	display:table;
+}
+
+#frmLogin{
+	display:table-cell;
+	 vertical-align: middle;
+	margin:auto;
+}

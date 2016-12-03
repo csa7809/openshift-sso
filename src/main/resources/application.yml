@@ -1,0 +1,177 @@
+
+server:
+  port: 8083
+
+spring:
+
+  profiles:
+    active: dev,mysql
+    
+        
+  datasource_user:
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:security
+    #url: jdbc:h2:file:///D:/asuppr/security
+    username: sa
+    password: sql
+    
+  datasource_oauth:
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:oauth
+    #url: jdbc:h2:file:///D:/asuppr/oauth
+    username: sa
+    password: sql
+    
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    hibernate.ddl-auto: update
+    
+  cloud:
+    config:
+      uri: ${SPRING_CONFIG_URI:http://localhost:8099}    
+    
+# ResourceServer
+
+security:
+  oauth2:
+    
+    client:
+     # BaseOAuth2ProtectedResourceDetails
+     # ------------------------------------
+     # Get a unique identifier for these protected resource details.
+     # id: 
+  
+     # The client identifier to use for this protected resource.
+     clientId: authServer
+     # The client secret. Ignored if the {@link #isAuthenticationRequired() secret isn't required}.
+     clientSecret: MyBigSecret
+  
+     # The URL to use to obtain an OAuth2 access token.
+     accessTokenUri: http://localhost:${server.port}/oauth/token
+
+     # The scope of this resource. Ignored if the {@link #isScoped() resource isn't scoped}.
+     #scope:
+
+     # The scheme to use to authenticate the client. E.g. "header" or "form", "query", "none".
+     #clientAuthenticationScheme: header
+  
+     # The grant type for obtaining an acces token for this resource.
+     # grantType: "authorization_code" | "client_credentials"| "unsupported"
+
+     # Get the bearer token method for this resource.
+     #authenticationScheme: header | form | query | none
+
+     # The name of the bearer token. The default is "access_token", which is according to the spec, but some providers
+     # (e.g. Facebook) don't conform to the spec.)
+     # 
+     #tokenName: access_token [/ code ...]
+
+     # A flag to indicate that this resource is only to be used with client credentials, thus allowing access tokens to
+     # be cached independent of a user's session.
+     #isClientOnly: false    
+    
+     # AbstractRedirectResourceDetails
+     # -------------------------------
+     #preEstablishedRedirectUri:
+     # The URI to which the user is to be redirected to authorize an access token.
+     userAuthorizationUri: http://localhost:${server.port}/oauth/authorize
+     
+     # Flag to signal that the current URI (if set) in the request should be used in preference to the pre-established
+     # redirect URI.
+     #useCurrentUri:      
+      
+    #org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties
+    resource:
+      # Identifier of the resource.
+      #id: 
+
+      # if this resource is protected by a unique client ? (reuse client configuration if in the same application)
+      #clientId:
+
+      # if this resource is protected by a unique client ? (reuse client configuration if in the same application)
+      #secretId:
+
+      # URI of the user endpoint.
+      userInfoUri: http://localhost:${server.port}/user
+      
+      # URI of the token decoding endpoint.      
+      #tokenInfoUri:
+      
+      #  Use the token info, can be set to false to use the user info.
+      #preferTokenInfo: true
+      
+      # The token type to send when using the userInfoUri.
+      #tokenType: bearer 
+      
+      # jwt: 
+      # # The verification key of the JWT token. Can either be a symmetric secret or
+      # # PEM-encoded RSA public key. If the value is not available, you can set the URI
+      # # instead.
+      # #keyValue; 
+      #
+      # # The URI of the JWT token. Can be set if the value is not available and the key is public.
+      # #keyUri:
+
+      
+    #org.springframework.boot.autoconfigure.security.oauth2.authserver.AuthorizationServerProperties
+    #authorization:
+      # Spring Security access rule for the check token endpoint (e.g. a SpEL expressionlike
+      # "isAuthenticated()"). Default is empty, which is interpreted as "denyAll()" (no
+      # access).
+      #checkTokenAccess: "isAuthenticated()" 
+      # Spring Security access rule for the token key endpoint (e.g. a SpEL expression like
+      # "isAuthenticated()"). Default is empty, which is interpreted as "denyAll()" (no
+      # access).
+      #tokenKeyAccess: "isAuthenticated()"
+      # Realm name for client authentication. If an unauthenticated request comes in to the
+      # token endpoint, it will respond with a challenge including this name.
+      #realm: acme
+      
+    
+    # UserInfo (map<string,object) => Principal : FixedPrincipalExtractor
+    # extract  userId from one of this properties { "user", "username", "userid", "user_id", "login", "id", "name" }
+    #
+    # UserInfo (map<string,object) => GrantAuthorityes: FixedPrincipalExtractor
+    # search a collection property "authorities", then get values, or search for keys { "authority", "role", "value" }
+    # default is ROLE_USER
+
+management:
+  context-path: /actuator
+  security:
+    enabled: false
+  health:
+    # l'application utilise 2 datasources specifiques, mais pas de primary
+    # ce client est registré avec healthcheck=true dans eureka
+    "db.enabled": false
+    
+    
+eureka:
+  hostname: localhost.dev.lc
+  client:
+    # Sans healthcheck, l'application sera toujours vu 'UP' dans le registre
+    healthcheck:
+      enabled: true
+    serviceUrl:
+      defaultZone: http://localhost:8099/eureka/
+  # Necessaire si actuator n'est pas à la racine
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    #hostname: sso.oab.lc
+    homePageUrl: http://${eureka.hostname}/
+    statusPageUrlPath: ${management.context-path}/info
+    healthCheckUrlPath: ${management.context-path}/health
+          
+flyway:
+  enabled: false
+  #locations: classpath:flyway/h2/migration
+  #url: jdbc:h2:file:///D:/asuppr/oauth
+  #user: sa
+  #password: sql
+
+  
+logging:
+  level:
+    "org.flyway": TRACE
+    "org.springframework.security": DEBUG
+    
